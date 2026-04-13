@@ -18,6 +18,8 @@ from tqdm.auto import tqdm
 from linccf_dash.config import PipelineConfig
 from linccf_dash.utils.dask_client import dask_client
 
+STAGE = "postprocess"
+
 # Positional and high-precision time columns that must stay float64
 _PRESERVE_FLOAT64 = frozenset([
     "ra", "dec", "raErr", "decErr",
@@ -40,7 +42,7 @@ def run_postprocess(cfg: PipelineConfig, catalog_filter: Optional[list[str]] = N
         )
         visit_map = visit_table.set_index("visitId")["expMidptMJD"].to_dict()
 
-    with dask_client(n_workers=16, threads_per_worker=1) as client:
+    with dask_client(cfg.dask.for_stage(STAGE)) as client:
         for catalog_name, catalog_cfg in catalogs.items():
             _postprocess_catalog(
                 catalog_name=catalog_name,

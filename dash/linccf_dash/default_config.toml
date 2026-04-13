@@ -2,6 +2,27 @@
 # Shipped with the package and applied as the base for every run.
 # Your run config is merged on top — only specify what differs.
 
+# ---------------------------------------------------------------------------
+# Dask client
+# ---------------------------------------------------------------------------
+
+[dask]
+threads_per_worker = 1
+n_workers    = 16
+memory_limit = "16GB"
+
+[dask.stages.nesting]
+n_workers    = 8
+memory_limit = "32GB"
+
+[dask.stages.crossmatch]
+n_workers    = 8
+memory_limit = "128GB"
+
+# ---------------------------------------------------------------------------
+# Stages
+# ---------------------------------------------------------------------------
+
 [stages]
 enabled = [
     "butler",

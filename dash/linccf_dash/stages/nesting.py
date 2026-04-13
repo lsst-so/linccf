@@ -14,11 +14,13 @@ from typing import Optional
 from linccf_dash.config import NestedConfig, PipelineConfig
 from linccf_dash.utils.dask_client import dask_client
 
+STAGE = "nesting"
+
 
 def run_nesting(cfg: PipelineConfig, nesting_filter: Optional[list[str]] = None) -> None:
     hats_dir = cfg.run.hats_dir
 
-    with dask_client(n_workers=8, threads_per_worker=1, memory_limit="32GB") as client:
+    with dask_client(cfg.dask.for_stage(STAGE)) as client:
         for nested_name, nested_cfg in cfg.enabled_nestings(nesting_filter).items():
             _build_nested_catalog(
                 nested_name=nested_name,

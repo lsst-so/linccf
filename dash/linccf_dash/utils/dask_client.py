@@ -2,29 +2,28 @@ from __future__ import annotations
 
 import tempfile
 from contextlib import contextmanager
-from typing import Optional
+from typing import Any
 
 from dask.distributed import Client
 
 
 @contextmanager
-def dask_client(
-    n_workers: int = 8,
-    threads_per_worker: int = 1,
-    memory_limit: Optional[str] = None,
-):
-    """Context manager that creates a Dask client with a temporary local directory."""
-    tmp = tempfile.TemporaryDirectory()
-    kwargs: dict = {
-        "n_workers": n_workers,
-        "threads_per_worker": threads_per_worker,
-        "local_directory": tmp.name,
-    }
-    if memory_limit is not None:
-        kwargs["memory_limit"] = memory_limit
+def dask_client(client_kwargs: dict[str, Any] | None = None):
+    """Context manager that creates a Dask client with a temporary local directory.
+
+    Args:
+        client_kwargs: Keyword arguments forwarded to ``dask.distributed.Client``.
+            ``local_directory`` is set automatically to a temp dir unless already provided.
+    """
+    kwargs = dict(client_kwargs or {})
+    tmp = None
+    if "local_directory" not in kwargs:
+        tmp = tempfile.TemporaryDirectory()
+        kwargs["local_directory"] = tmp.name
     client = Client(**kwargs)
     try:
         yield client
     finally:
         client.close()
-        tmp.cleanup()
+        if tmp is not None:
+            tmp.cleanup()

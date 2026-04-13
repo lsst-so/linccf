@@ -10,11 +10,13 @@ from hats_import.collection.arguments import CollectionArguments
 from linccf_dash.config import PipelineConfig
 from linccf_dash.utils.dask_client import dask_client
 
+STAGE = "collections"
+
 
 def run_collections(cfg: PipelineConfig, collection_filter: Optional[list[str]] = None) -> None:
     hats_dir = cfg.run.hats_dir
 
-    with dask_client(n_workers=16, threads_per_worker=1) as client:
+    with dask_client(cfg.dask.for_stage(STAGE)) as client:
         for collection_name, collection_cfg in cfg.enabled_collections(collection_filter).items():
             nested_name = collection_cfg.nested_catalog
             collection_dir = hats_dir / collection_name

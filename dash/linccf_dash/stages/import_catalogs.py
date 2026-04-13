@@ -14,13 +14,15 @@ from linccf_dash.config import PipelineConfig
 from linccf_dash.utils.dask_client import dask_client
 from linccf_dash.utils.readers import DimensionParquetReader
 
+STAGE = "import"
+
 
 def run_import(cfg: PipelineConfig, catalog_filter: Optional[list[str]] = None) -> None:
     raw_dir = cfg.run.raw_dir
     hats_dir = cfg.run.hats_dir
     hats_dir.mkdir(parents=True, exist_ok=True)
 
-    with dask_client(n_workers=8, threads_per_worker=1, memory_limit="16GB") as client:
+    with dask_client(cfg.dask.for_stage(STAGE)) as client:
         for catalog_name, catalog_cfg in cfg.enabled_catalogs(catalog_filter).items():
             index_files = list((raw_dir / "index" / catalog_name).glob("*.csv"))
 

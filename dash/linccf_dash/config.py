@@ -200,6 +200,39 @@ class CrossmatchConfig(BaseModel):
     surveys: dict[str, CrossmatchSurveyConfig] = {}
 
 
+class DaskConfig(BaseModel):
+    """Global Dask client settings and per-stage overrides.
+
+    TOML shape:
+        [dask]
+        n_workers = 8
+        threads_per_worker = 1
+        # any other kwargs accepted by dask.distributed.Client
+
+        [dask.stages.import]
+        n_workers = 8
+        memory_limit = "16GB"
+
+        [dask.stages.postprocess]
+        n_workers = 16
+    """
+    global_kwargs: dict[str, Any] = {}
+    stages: dict[str, dict[str, Any]] = {}
+
+    @model_validator(mode="before")
+    @classmethod
+    def _split_global_and_stages(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        stages = data.get("stages", {})
+        global_kwargs = {k: v for k, v in data.items() if k != "stages"}
+        return {"global_kwargs": global_kwargs, "stages": stages}
+
+    def for_stage(self, stage: str) -> dict[str, Any]:
+        """Return merged client kwargs: global defaults overridden by stage-specific settings."""
+        return {**self.global_kwargs, **self.stages.get(stage, {})}
+
+
 class PipelineConfig(BaseModel):
     run: RunConfig
     stages: StagesConfig = StagesConfig()
@@ -207,6 +240,7 @@ class PipelineConfig(BaseModel):
     nested: NestedConfigs = NestedConfigs()
     collections: CollectionsConfig = CollectionsConfig()
     crossmatch: CrossmatchConfig = CrossmatchConfig()
+    dask: DaskConfig = DaskConfig()
 
     def enabled_catalogs(self, filter: Optional[list[str]] = None) -> dict[str, CatalogConfig]:
         """Return configs for enabled catalogs, optionally filtered to a subset by name."""
