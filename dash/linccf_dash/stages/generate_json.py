@@ -18,7 +18,7 @@ def run_generate_json(cfg: PipelineConfig, collection_filter: Optional[list[str]
         for collection_name in cfg.enabled_collections(collection_filter)
     ]
 
-    out_path = hats_dir.parent / f"{run_cfg.version}.json"
+    out_path = hats_dir / f"{run_cfg.version}.json"
     with open(out_path, "w") as f:
         json.dump(collections_json, f)
     print(f"Saved {out_path}")

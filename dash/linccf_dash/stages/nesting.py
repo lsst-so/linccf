@@ -75,6 +75,10 @@ def _build_nested_catalog(
             lambda df: _sort_nested_sources(df, source_cols, nested_cfg.sort_column)
         )
 
+        # Save intermediate and reimport with production settings
+        intermediate_path = hats_dir / f"{nested_name}_intermediate"
+        nested_cat.to_hats(intermediate_path, catalog_name=nested_name)
+
         # Compute hats_cols_default if default columns are specified
         addl_props: dict = {}
         if nested_cfg.default_columns:
@@ -84,10 +88,6 @@ def _build_nested_catalog(
             if missing:
                 print(f"Warning: requested default columns missing from {nested_name}: {', '.join(missing)}")
             addl_props["hats_cols_default"] = ",".join(valid_default_cols)
-
-        # Save intermediate and reimport with production settings
-        intermediate_path = hats_dir / f"{nested_name}_intermediate"
-        nested_cat.to_hats(intermediate_path, catalog_name=nested_name)
 
         reimport_args = ImportArguments.reimport_from_hats(
             intermediate_path,
