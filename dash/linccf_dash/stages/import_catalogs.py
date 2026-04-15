@@ -6,6 +6,7 @@ from typing import Optional
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
+from hats.io.validation import is_valid_catalog
 from hats_import import pipeline_with_client
 from hats_import.catalog.arguments import ImportArguments
 from lsst.resources import ResourcePath
@@ -24,6 +25,11 @@ def run_import(cfg: PipelineConfig, catalog_filter: Optional[list[str]] = None) 
 
     with dask_client(cfg.dask.for_stage(STAGE)) as client:
         for catalog_name, catalog_cfg in cfg.enabled_catalogs(catalog_filter).items():
+            if is_valid_catalog(hats_dir / catalog_name):
+                print(f"Skipping {catalog_name} — already imported.\n")
+                continue
+            print(f"Starting import for {catalog_name}...\n")
+
             index_files = list((raw_dir / "index" / catalog_name).glob("*.csv"))
 
             schema_file: Optional[Path] = None
