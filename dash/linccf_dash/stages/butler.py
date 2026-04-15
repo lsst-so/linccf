@@ -18,7 +18,16 @@ def run_butler(cfg: PipelineConfig, catalog_filter: Optional[list[str]] = None) 
     for subdir in ("paths", "refs", "sizes"):
         (raw_dir / subdir).mkdir(parents=True, exist_ok=True)
 
-    butler = dafButler.Butler(cfg.run.repo, collections=cfg.run.butler_collection)
+    col_butler = dafButler.Butler(cfg.run.repo)
+
+    # Expand your pattern into a real list
+    collections = list(col_butler.registry.queryCollections(cfg.run.butler_collection))
+
+    if len(collections) > 1:
+        print(f"Found {len(collections)} collections matching pattern '{cfg.run.butler_collection}':")
+        print(", ".join(collections))
+
+    butler = dafButler.Butler(cfg.run.repo, collections=collections)
 
     for catalog_name in cfg.enabled_catalogs(catalog_filter):
         _get_uris_from_butler(butler, catalog_name, raw_dir)
