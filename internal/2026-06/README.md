@@ -6,5 +6,5 @@ This sprint consists of 4 "science projects" with LSDB, using Rubin data.
 
 2. [Sandro] ML-based Similarity Search
 3. [Doug] Finding RRLyrae 
-4. [Olivia] Claudify AGN short term variability
+4. [Olivia] Claudify AGN short term variability: [project repo](https://github.com/olivialynn/Claudify-AGN-Var/tree/main)
 5. [Sean] A Census of Stellar Variability with DP2
